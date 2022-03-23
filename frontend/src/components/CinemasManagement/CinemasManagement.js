@@ -9,6 +9,7 @@ import { Calendar } from "primereact/calendar";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate"
 
 import CinemaHalls from "../CinemaHalls/CinemaHalls";
+import constants from "../../constants";
 
 const CinemasManagement = () => {
     const axiosPrivate = useAxiosPrivate()
@@ -59,12 +60,12 @@ const CinemasManagement = () => {
     )
 
     const handleCinemasFetch = async () => {
-        axiosPrivate.get('http://localhost:3000/cinemas')
+        axiosPrivate.get(`${constants.baseURL}/cinemas`)
         .then(response => setCinemas(response.data))
     } 
 
     const handleCinemaDelete = async (cinemaId) => {
-        axiosPrivate.delete(`http://localhost:3000/cinema/${cinemaId}`)
+        axiosPrivate.delete(`${constants.baseURL}/cinema/${cinemaId}`)
         .then(response => {
             if(response.status == 200) {
                 toast.current.show({severity:'success', summary: 'Success', detail:'Cinema succesfully deleted', life: 3000});
@@ -88,7 +89,7 @@ const CinemasManagement = () => {
     }
 
     const handleCinemaAdd = async () => {
-        axiosPrivate.post(`http://localhost:3000/cinema`, addData, {
+        axiosPrivate.post(`${constants.baseURL}/cinema`, addData, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -105,7 +106,7 @@ const CinemasManagement = () => {
     }
 
     const handleCinemaEdit = async () => {
-        axiosPrivate.put(`http://localhost:3000/cinema`, {
+        axiosPrivate.put(`${constants.baseURL}/cinema`, {
             id: addData._id,
             newCinema: {...addData }
         }, {

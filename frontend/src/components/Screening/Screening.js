@@ -8,6 +8,8 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate"
 import { Button } from "primereact/button";
 import { Toast } from 'primereact/toast';
 
+import constants from "../../constants";
+
 const Screening = () => {
     const axiosPrivate = useAxiosPrivate()
     const toast = useRef(null)
@@ -42,7 +44,7 @@ const Screening = () => {
     }
 
     const handleScreeningDelete = (e) => {
-        axiosPrivate.delete(`http://localhost:3000/screening/${e}`)
+        axiosPrivate.delete(`${constants.baseURL}/screening/${e}`)
         .then(response => {
             if(response.status == 200) {
                 toast.current.show({severity:'success', summary: 'Success', detail:'Screening succesfully deleted', life: 3000});
@@ -54,12 +56,12 @@ const Screening = () => {
     }
 
     const handleScreeningFetch = () => {
-        axiosPrivate.get(`http://localhost:3000/screenings/hall/${selectedCinemaHall}`)
+        axiosPrivate.get(`${constants.baseURL}/screenings/hall/${selectedCinemaHall}`)
         .then(response => setScreenings(response.data))
     }
 
     const handleScreeningAdd = async () => {
-        axiosPrivate.post(`http://localhost:3000/screening`, {
+        axiosPrivate.post(`${constants.baseURL}/screening`, {
             cinemaId: selectedCinema,
             cinemaHallId: selectedCinemaHall,
             movieId: screeningMovie,
@@ -83,9 +85,9 @@ const Screening = () => {
 
     }
     useEffect(() => {
-        axiosPrivate.get('http://localhost:3000/cinemas')
+        axiosPrivate.get(`${constants.baseURL}/cinemas`)
         .then(response => setCinemas(response.data))
-        axiosPrivate.get(`http://localhost:3000/movies`)
+        axiosPrivate.get(`${constants.baseURL}/movies`)
         .then(result => setMovies(result.data))
     },[])
 
@@ -100,7 +102,7 @@ const Screening = () => {
 
     useEffect(() => {
         if(selectedCinema!="") {
-            axiosPrivate.get(`http://localhost:3000/cinema-halls/${selectedCinema}`)
+            axiosPrivate.get(`${constants.baseURL}/cinema-halls/${selectedCinema}`)
             .then(response => setCinemaHalls(response.data))
         }
     }, [selectedCinema])
@@ -115,7 +117,7 @@ const Screening = () => {
     },[cinemaHalls])
 
     useEffect(() => {
-        axiosPrivate.get(`http://localhost:3000/screenings/hall/${selectedCinemaHall}`)
+        axiosPrivate.get(`${constants.baseURL}/screenings/hall/${selectedCinemaHall}`)
         .then(response => setScreenings(response.data))
 
     }, [selectedCinemaHall])

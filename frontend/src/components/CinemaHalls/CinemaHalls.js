@@ -7,6 +7,7 @@ import { Toast } from 'primereact/toast';
 import { Dialog } from "primereact/dialog";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate"
 import PropTypes from 'prop-types';
+import constants from "../../constants";
 
 
 const CinemaHalls = ({cinemaId}) => {
@@ -35,7 +36,7 @@ const CinemaHalls = ({cinemaId}) => {
     },[])
 
     const handleCinemaHallsFetch = async () => {
-        axiosPrivate.get(`http://localhost:3000/cinema-halls/${cinemaId}`)
+        axiosPrivate.get(`${constants.baseURL}/cinema-halls/${cinemaId}`)
         .then(response => {
             setCinemaHalls(response.data)
             setHallData(hallTemplate)
@@ -60,7 +61,7 @@ const CinemaHalls = ({cinemaId}) => {
     }
 
     const handleCinemaHallAdd = () => {
-        axiosPrivate.post('http://localhost:3000/cinema-hall', hallData, {
+        axiosPrivate.post(`${constants.baseURL}/cinema-hall`, hallData, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -82,7 +83,7 @@ const CinemaHalls = ({cinemaId}) => {
     }
 
     const handleCinemaHallDelete = (id) => {
-        axiosPrivate.delete(`http://localhost:3000/cinema-hall/${id}`,)
+        axiosPrivate.delete(`${constants.baseURL}/cinema-hall/${id}`,)
         .then(response => {
             handleCinemaHallsFetch()
             if(response.status == 200) {
@@ -95,7 +96,7 @@ const CinemaHalls = ({cinemaId}) => {
     }
 
     const handleCinemaHallEdit = async () => {
-        axiosPrivate.put('http://localhost:3000/cinema-hall', {
+        axiosPrivate.put(`${constants.baseURL}/cinema-hall`, {
             id: hallData.id,
             newCinemaHall: {
                 name: hallData.name,

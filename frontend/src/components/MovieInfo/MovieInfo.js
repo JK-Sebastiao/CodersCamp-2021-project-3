@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import "../../styles/MovieInfo.css"
+import constants from '../../constants';
 
 const MovieInfo = () => {
 
@@ -20,7 +21,7 @@ const MovieInfo = () => {
 
     useEffect(async () => {
 
-        await fetch(`http://localhost:3000/movie/${id}`)
+        await fetch(`${constants.baseURL}/movie/${id}`)
             .then(response => response.json())
             .then(data => setMovie(data));
     }, []);

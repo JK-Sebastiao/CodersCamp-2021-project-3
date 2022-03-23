@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Carousel } from 'primereact/carousel';
 import '../../styles/CarouselDemo.css'
 import { Link } from 'react-router-dom';
+import constants from '../../constants';
+
 
 const UpcomingMovies = () => {
     const [movies, setMovies] = useState([]);
@@ -25,7 +27,8 @@ const UpcomingMovies = () => {
     ];
 
     useEffect(async () => {
-        await fetch('http://localhost:3000/upcoming')
+
+        await fetch(`${constants.baseURL}/upcoming`)
             .then(res => res.json())
             .then(data => setMovies(data));
     }, []);

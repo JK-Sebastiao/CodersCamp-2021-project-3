@@ -14,6 +14,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 import '../../styles/MoviesTable.css';
+import constants from '../../constants';
 
 const MoviesTable = () => {
 
@@ -44,7 +45,7 @@ const MoviesTable = () => {
     const axiosPrivate = useAxiosPrivate();
 
     useEffect(async () => {
-        await axiosPrivate.get('http://localhost:3000/movies')
+        await axiosPrivate.get(`${constants.baseURL}/movies`)
             .then(response => response.data)
             .then(data => setMovies(data));
     }, [movieChange]);
@@ -73,7 +74,7 @@ const MoviesTable = () => {
 
         _movie['stars'] = _movie['stars'] == '' ? '' : _movie['stars'].split(', ')
 
-        await axiosPrivate.post('http://localhost:3000/movies/new', _movie, {
+        await axiosPrivate.post(`${constants.baseURL}/movies/new`, _movie, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -102,7 +103,7 @@ const MoviesTable = () => {
 
     const deleteMovie = async () => {
 
-        await axiosPrivate.delete(`http://localhost:3000/movies/${movie._id}`)
+        await axiosPrivate.delete(`${constants.baseURL}/movies/${movie._id}`)
             .then(response => {
                 // check for error response
                 if (response.statusText != 'OK') {
