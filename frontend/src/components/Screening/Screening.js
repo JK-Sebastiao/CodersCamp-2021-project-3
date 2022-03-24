@@ -8,8 +8,6 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate"
 import { Button } from "primereact/button";
 import { Toast } from 'primereact/toast';
 
-import constants from "../../constants";
-
 const Screening = () => {
     const axiosPrivate = useAxiosPrivate()
     const toast = useRef(null)
@@ -24,7 +22,9 @@ const Screening = () => {
 
     const [movies, setMovies] = useState([])
 
-    const [screeningDate, setScreeningDate] = useState(new Date()) 
+    const today = new Date()
+    today.setHours(12, 0, 0, 0)
+    const [screeningDate, setScreeningDate] = useState(today)
     const [screeningMovie, setScreeningMovie] = useState("") 
 
     const [screenings, setScreenings] = useState([])
@@ -44,7 +44,7 @@ const Screening = () => {
     }
 
     const handleScreeningDelete = (e) => {
-        axiosPrivate.delete(`${constants.baseURL}/screening/${e}`)
+        axiosPrivate.delete(`http://localhost:3000/screening/${e}`)
         .then(response => {
             if(response.status == 200) {
                 toast.current.show({severity:'success', summary: 'Success', detail:'Screening succesfully deleted', life: 3000});
@@ -56,12 +56,12 @@ const Screening = () => {
     }
 
     const handleScreeningFetch = () => {
-        axiosPrivate.get(`${constants.baseURL}/screenings/hall/${selectedCinemaHall}`)
+        axiosPrivate.get(`http://localhost:3000/screenings/hall/${selectedCinemaHall}/${screeningDate.toISOString()}`)
         .then(response => setScreenings(response.data))
     }
 
     const handleScreeningAdd = async () => {
-        axiosPrivate.post(`${constants.baseURL}/screening`, {
+        axiosPrivate.post(`http://localhost:3000/screening`, {
             cinemaId: selectedCinema,
             cinemaHallId: selectedCinemaHall,
             movieId: screeningMovie,
@@ -85,9 +85,9 @@ const Screening = () => {
 
     }
     useEffect(() => {
-        axiosPrivate.get(`${constants.baseURL}/cinemas`)
+        axiosPrivate.get('http://localhost:3000/cinemas')
         .then(response => setCinemas(response.data))
-        axiosPrivate.get(`${constants.baseURL}/movies`)
+        axiosPrivate.get(`http://localhost:3000/movies`)
         .then(result => setMovies(result.data))
     },[])
 
@@ -102,7 +102,7 @@ const Screening = () => {
 
     useEffect(() => {
         if(selectedCinema!="") {
-            axiosPrivate.get(`${constants.baseURL}/cinema-halls/${selectedCinema}`)
+            axiosPrivate.get(`http://localhost:3000/cinema-halls/${selectedCinema}`)
             .then(response => setCinemaHalls(response.data))
         }
     }, [selectedCinema])
@@ -117,10 +117,10 @@ const Screening = () => {
     },[cinemaHalls])
 
     useEffect(() => {
-        axiosPrivate.get(`${constants.baseURL}/screenings/hall/${selectedCinemaHall}`)
+        axiosPrivate.get(`http://localhost:3000/screenings/hall/${selectedCinemaHall}/${screeningDate.toISOString()}`)
         .then(response => setScreenings(response.data))
 
-    }, [selectedCinemaHall])
+    }, [selectedCinemaHall, screeningDate])
     
     return (
         <div>
@@ -135,11 +135,8 @@ const Screening = () => {
                         optionLabel="label" 
                         placeholder="Select cinema" 
                     />
-                </>} right={<span className="text-white">Screenings management</span>} />
-            </div>
-            <div className="m-3">
-                <div>
                     <Dropdown 
+                        className="m-2"
                         value={selectedCinemaHall} 
                         options={cinemaHallsList} 
                         onChange={handleCinemaHallChange} 
@@ -147,16 +144,21 @@ const Screening = () => {
                         optionLabel="label" 
                         placeholder="Select cinema hall" 
                     />
+                </>} right={<span className="text-white">Screenings management</span>} />
+            </div>
+            <div className="m-3">
+                <div>
+                    
                 </div>
                 {
                     selectedCinemaHall != "" ?
-                        <div className="text-white m-3">
-                            <div>Create screening:</div>
-                            <div className="field">
+                        <div className="text-white m-3 grid">
+                            <div className="col-12 text-xl">Create screening:</div>
+                            <div className="col-6 field">
                                 <label htmlFor="time24">Date/time:</label><br></br>
                                 <Calendar id="time24" value={screeningDate} onChange={(e) => setScreeningDate(e.value)} showTime />
                             </div>
-                            <div className="field">
+                            <div className="field col-6">
                                 <label htmlFor="movie">Movie:</label><br></br>
                                 <Dropdown
                                     id="movie" 
@@ -168,7 +170,7 @@ const Screening = () => {
                                     placeholder="Select movie"
                                 />
                             </div>
-                            <div>
+                            <div className="col-12">
                                 <Button
                                     icon="pi pi-plus"
                                     label="Add screening"
@@ -180,7 +182,7 @@ const Screening = () => {
                     <></>
                 }
 
-                <div className="text-white m-3">Screenings:</div>
+                <div className="text-white m-3">Screenings at selected hall and date:</div>
                 <div>
                     <DataTable
                         value={screenings}
@@ -189,17 +191,48 @@ const Screening = () => {
                     >
                         <Column 
                             field="screeningDate" 
-                            header="Date"
-                            body={e => (new Date(e.screeningDate).toLocaleString())}
+                            header="Start"
+                            body={e => {
+                                const date = new Date(e.screeningDate)
+                                return `${date.getHours() < 10 ? '0' + date.getHours() : date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`
+                                
+                            }}
                         >
                         </Column>
-                        <Column field="movieId" header="Movie Id"></Column>
+                        <Column 
+                            header="End"
+                            body={e => {
+                                for(const movie of movies) {
+                                    if(movie._id == e.movieId) {
+                                        const [movieH, movieM] = movie.length.slice(0,-1).split("h").map(e=>(e-0))
+                                        const screeningStart = new Date(e.screeningDate)
+                                        const date = new Date(screeningStart.getTime() + movieH * 1000*60*60 + movieM * 1000*60 )
+                                        return `${date.getHours() < 10 ? '0' + date.getHours() : date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`
+                                    }
+                                }
+                            }}
+                        >
+                        </Column>
                         <Column 
                             header="Title"
                             body={e => {
                                 for(const movie of movies) {
                                     if(movie._id == e.movieId) {
-                                        return movie.title
+                                        return (
+                                            <a className="text-purple-200" target="_blank" rel="noreferrer" href={`/movie/${movie._id}`}>
+                                                {movie.title}
+                                            </a>
+                                        )
+                                    }
+                                }
+                            }}
+                        ></Column>
+                        <Column 
+                            header="Length"
+                            body={e => {
+                                for(const movie of movies) {
+                                    if(movie._id == e.movieId) {
+                                        return movie.length
                                     }
                                 }
                             }}
@@ -208,14 +241,14 @@ const Screening = () => {
                             header="Delete"
                             body={e => 
                                 (<Button
-                                    icon="pi pi-times p-button-secondary"
+                                    className="p-button-danger"
+                                    icon="pi pi-times"
                                     onClick={() => {handleScreeningDelete(e._id)}}
                                 ></Button>)
                             }
                         ></Column>
                     </DataTable>
                 </div>
-
             </div>
         </div>
     )
